@@ -28,6 +28,13 @@ export function displayName(trophy, settings, earned) {
     : trophy.name;
 }
 
+// Short form for chips and compact lists.
+export function displayShortName(trophy, settings, earned) {
+  return isHiddenBySpoiler(trophy, settings, earned)
+    ? 'Hidden story trophy'
+    : trophy.name;
+}
+
 export function displayDescription(trophy, settings, earned) {
   return isHiddenBySpoiler(trophy, settings, earned)
     ? 'Spoiler hidden until earned.'

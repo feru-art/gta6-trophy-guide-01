@@ -10,6 +10,9 @@ export function trophyDetailHtml(trophy, ctx) {
   const notes = loadNotes();
   const note = notes[trophy.id] || '';
   const earnedNow = earned.has(trophy.id);
+  // The guide text carries its sources inline; the pane shows them once, in
+  // the dedicated Sources line below, so the inline tail is trimmed here.
+  const guideBody = trophy.guide.split(' Sources: ')[0];
   return `
     <h2>${escapeHtml(displayName(trophy, settings, earned))}</h2>
     <p class="grade-line">${gradeLabel(trophy.grade)} · ${trophy.kind} · Stage ${trophy.stage} — ${escapeHtml(stageOf(trophy).title.replace(/^Stage \d+ — /, ''))}</p>
@@ -18,7 +21,7 @@ export function trophyDetailHtml(trophy, ctx) {
     ${trophy.missable ? `<p class="miss-box"><strong>Missable.</strong> ${escapeHtml(trophy.missable_reason)} Mission replay in GTA VI is unconfirmed, so treat this as do-it-now.</p>` : ''}
     ${hidden ? '' : `
       <h3>Guide</h3>
-      <p class="guide">${escapeHtml(trophy.guide)}</p>
+      <p class="guide">${escapeHtml(guideBody)}</p>
       <p class="sources"><strong>Sources:</strong> ${escapeHtml(trophy.sources)}</p>
       <p class="warn">Locations and steps are <strong>not yet checked in the game</strong> — the game is a day old. We claim nothing we have not verified.</p>
       <h3>Your note</h3>

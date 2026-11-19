@@ -2,10 +2,11 @@
 // the reason for each. Nothing here is invented: a trophy is missable when its
 // description ties it to a chapter, a named mission, a character strand's final
 // mission, or a one-time choice.
+import { displayDescription, displayName } from '../filters.js';
 import { escapeHtml } from './detail.js';
 
 export function renderMissablesView(ctx) {
-  const { trophies, earned } = ctx;
+  const { trophies, earned, settings } = ctx;
   const missables = trophies.filter((t) => t.missable);
   const done = missables.filter((t) => earned.has(t.id)).length;
   const rows = missables.map((t) => {
@@ -14,8 +15,8 @@ export function renderMissablesView(ctx) {
       <span class="check" aria-hidden="true">${isEarned ? '✓' : ''}</span>
       <span class="medal ${t.grade}" aria-hidden="true"></span>
       <span class="body">
-        <span class="name">${escapeHtml(t.name)}</span>
-        <span class="desc">${escapeHtml(t.description)}</span>
+        <span class="name">${escapeHtml(displayName(t, settings, earned))}</span>
+        <span class="desc">${escapeHtml(displayDescription(t, settings, earned))}</span>
         <span class="desc"><strong style="color:var(--text)">Why missable:</strong> ${escapeHtml(t.missable_reason)}</span>
         <span class="tags"><span class="tag grade-${t.grade}">${t.grade}</span><span class="tag miss">Missable</span><span class="tag">Stage ${t.stage}</span></span>
       </span>

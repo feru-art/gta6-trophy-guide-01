@@ -3,7 +3,9 @@
 import { loadTrophies } from './data.js';
 import { isDemo, loadNotes, loadProgress, loadSettings, saveNote, saveProgress, saveSettings } from './store.js';
 import { renderChecklistView } from './views/checklist.js';
+import { escapeHtml } from './views/detail.js';
 import { renderMissablesView } from './views/missables.js';
+import { renderPlannerView } from './views/planner.js';
 import { renderRoadmapView } from './views/roadmap.js';
 import { bindSettingsView, renderSettingsView } from './views/settings.js';
 
@@ -11,6 +13,7 @@ const NAV = [
   { hash: '#/', label: 'Checklist' },
   { hash: '#/roadmap', label: 'Roadmap to Platinum' },
   { hash: '#/missables', label: 'Missables' },
+  { hash: '#/planner', label: 'Next Up' },
   { hash: '#/settings', label: 'Settings & Save' },
 ];
 
@@ -45,6 +48,7 @@ function routeFromHash() {
   }
   if (hash === '#/roadmap') return 'roadmap';
   if (hash === '#/missables') return 'missables';
+  if (hash === '#/planner') return 'planner';
   if (hash === '#/settings') return 'settings';
   return 'checklist';
 }
@@ -69,6 +73,7 @@ function renderNav() {
     const active = (ctx.route === 'checklist' && item.hash === '#/')
       || (ctx.route === 'roadmap' && item.hash === '#/roadmap')
       || (ctx.route === 'missables' && item.hash === '#/missables')
+      || (ctx.route === 'planner' && item.hash === '#/planner')
       || (ctx.route === 'settings' && item.hash === '#/settings');
     return `<a href="${item.hash}" class="${active ? 'active' : ''}">${item.label}</a>`;
   }).join('');
@@ -83,7 +88,9 @@ function renderToolbar() {
   const chips = KINDS.map((k) => `<button class="chip ${k.key === 'missable' ? 'missable' : ''}" data-kind="${k.key}" aria-pressed="${ctx.settings.kind === k.key}">${k.label}</button>`).join('');
   bar.innerHTML = `
     ${chips}
+    <input class="search" id="search-box" type="search" placeholder="Search trophies…" value="${escapeHtml(ctx.settings.query || '')}" aria-label="Search trophies">
     <span class="spacer"></span>
+    <label class="toggle"><input type="checkbox" id="hide-earned" ${ctx.settings.hideEarned ? 'checked' : ''}> Hide earned</label>
     <label class="toggle"><input type="checkbox" id="spoiler-toggle" ${ctx.settings.spoiler ? 'checked' : ''}> Spoilers off</label>
     <button class="btn" id="export-btn">Export</button>
     <label class="btn" for="import-file" style="cursor:pointer">Import</label>
@@ -94,6 +101,24 @@ function renderToolbar() {
       ctx.onSettingsChange();
       render();
     });
+  });
+  const searchBox = document.getElementById('search-box');
+  searchBox.addEventListener('input', () => {
+    ctx.settings.query = searchBox.value;
+    saveSettings(ctx.settings);
+    render();
+    // Keep focus in the search box across the re-render.
+    const again = document.getElementById('search-box');
+    if (again) {
+      again.focus();
+      again.setSelectionRange(again.value.length, again.value.length);
+    }
+  });
+  const hideEarned = document.getElementById('hide-earned');
+  hideEarned.addEventListener('change', () => {
+    ctx.settings.hideEarned = hideEarned.checked;
+    ctx.onSettingsChange();
+    render();
   });
   const spoiler = document.getElementById('spoiler-toggle');
   spoiler.addEventListener('change', () => {
@@ -129,6 +154,7 @@ function render() {
   const view = document.getElementById('view');
   if (ctx.route === 'roadmap') view.innerHTML = renderRoadmapView(ctx);
   else if (ctx.route === 'missables') view.innerHTML = renderMissablesView(ctx);
+  else if (ctx.route === 'planner') view.innerHTML = renderPlannerView(ctx);
   else if (ctx.route === 'settings') {
     view.innerHTML = renderSettingsView(ctx);
     bindSettingsView(ctx, render);
